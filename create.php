@@ -1,12 +1,38 @@
 <?php
+
+    // htmlディレクトリの初期化
+    if(!empty(glob("html/**/*"))) {
+        unlink("html.zip");
+    }
+
+    // ファイルの削除
+    foreach(glob("html/*/*/*.html") as $file) {
+        // globで取得したファイルをunlinkで1つずつ削除していく
+        unlink($file);
+    }
+    foreach(glob("html/*/*.html") as $file) {
+        // globで取得したファイルをunlinkで1つずつ削除していく
+        unlink($file);
+    }
+
+    // ディレクトリの削除
+    foreach(glob("html/*/*") as $dir) {
+        // globで取得したディレクトリをrmdirで1つずつ削除していく
+        rmdir($dir);
+    }
+    foreach(glob("html/*") as $dir) {
+        // globで取得したディレクトリをrmdirで1つずつ削除していく
+        rmdir($dir);
+    }
+
     session_start();
-    $post = $_SESSION['data'];
 
     //読み込みエラーもしくは変数がない時の処理
-    if(empty($post)) {
+    if(empty($_SESSION) || !isset($_SESSION['data'])) {
         print("Could not read file");
         return;
     }
+    $post = $_SESSION['data'];
 
     $target_urls = explode("\n", $post["target_urls"]); // とりあえず行に分割
     $target_urls = array_map('trim', $target_urls); // 各行にtrim()をかける
@@ -19,8 +45,8 @@
 
     //ファイル生成の関数
     function create_file($url, $site_url) {
-        $buff = file_get_contents($url); // urlの内容を読み取る
-        $key = str_replace($site_url, "", $url);
+        $buff = file_get_contents(urldecode($url)); // urlの内容を読み取る
+        $key = str_replace($site_url, "", urldecode($url));
         check_dir($key);
         $fname = "html/".$key."index.html"; // 生成するファイルのディレクトリとファイル名
         $fhandle = fopen($fname, "w"); // ファイルを書き込みモードで開く。
@@ -41,6 +67,54 @@
         }
     }
 
+    // 圧縮するディレクトリー
+    $dir = dirname(__FILE__) . '/html/';
+
+    // Zipファイルの保存先
+    $file = './html.zip';
+
+    zipDirectory($dir, $file);
+
+    // ディレクトリを圧縮する
+    function zipDirectory($dir, $file, $root="") {
+        $zip = new ZipArchive();
+        $res = $zip->open($file, ZipArchive::CREATE);
+
+        if($res) {
+            // $rootが指定されていればその名前のフォルダにファイルをまとめる
+            if($root != "") {
+                $zip->addEmptyDir($root);
+                $root .= DIRECTORY_SEPARATOR;
+            }
+
+            $baseLen = mb_strlen($dir);
+
+            $iterator = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator(
+                    $dir,
+                    FilesystemIterator::SKIP_DOTS
+                    |FilesystemIterator::KEY_AS_PATHNAME
+                    |FilesystemIterator::CURRENT_AS_FILEINFO
+                ), RecursiveIteratorIterator::SELF_FIRST
+            );
+
+            $list = array();
+            foreach($iterator as $pathname => $info) {
+                $localpath = $root . mb_substr($pathname, $baseLen);
+
+                if($info->isFile()) {
+                    $zip->addFile($pathname, $localpath);
+                } else {
+                    $res = $zip->addEmptyDir($localpath);
+                }
+            }
+
+            $zip->close();
+        } else {
+            return false;
+        }
+    }
+
     unset($_SESSION['data']);
 ?>
 <!DOCTYPE html>
@@ -53,6 +127,7 @@
 </head>
 <body class="container">
     <h1>success</h1>
-    <a href="/">Retrun</a>
+    <p><a href="./html.zip">download</a></p>
+    <p><a href="../">Retrun</a></p>
 </body>
 </html>
