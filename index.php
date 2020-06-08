@@ -24,11 +24,25 @@
     <title>Static File Generator</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
 </head>
-<body class="container">
+<body class="container mt-5">
     <h1 class="text-center">Static File Generator</h1>
-    <form action="./" method="post">
+    <form action="./" method="post" class="mt-5">
         <table class="table">
             <tbody>
+                <tr>
+                    <th>
+                        <label for="fSiteUrl">Extension</label>
+                    </th>
+                    <td>
+                        <?php
+                            if(!empty($err) && in_array("extension", $err)) {
+                                echo "<p class=\"badge badge-danger text-wrap\">empty</p>";
+                            }
+                        ?>
+                        <label class="mr-5"><input type="radio" name="extension" value="html" class="mr-2" checked>html</label>
+                        <label class="mr-5"><input type="radio" name="extension" value="php" class="mr-2">php</label>
+                    </td>
+                </tr>
                 <tr>
                     <th>
                         <label for="fSiteUrl">Site URL</label>
@@ -63,7 +77,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2" class="text-center"><button type="submit">create files</button></td>
+                    <td colspan="2" class="text-center"><button type="submit" class="btn btn-primary btn-lg">Create Static Files!</button></td>
                 </tr>
             </tbody>
         </table>
