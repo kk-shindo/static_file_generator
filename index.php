@@ -1,5 +1,6 @@
 <?php
     $post = $_POST;
+    echo "<pre>"; var_dump($post); echo "</pre>";
     if(!empty($post)) {
         $err = [];
         foreach($post as $key => $val) {
@@ -26,14 +27,14 @@
 </head>
 <body class="container mt-5">
     <h1 class="text-center">Static File Generator</h1>
-    <form action="./" method="post" class="mt-5">
+    <form action="./" method="post" id="app" class="mt-5">
         <table class="table">
             <tbody>
                 <tr>
                     <th>
                         <label for="fSiteUrl">Extension</label>
                     </th>
-                    <td>
+                    <td colspan="2">
                         <?php
                             if(!empty($err) && in_array("extension", $err)) {
                                 echo "<p class=\"badge badge-danger text-wrap\">empty</p>";
@@ -47,7 +48,7 @@
                     <th>
                         <label for="fSiteUrl">Site URL</label>
                     </th>
-                    <td>
+                    <td colspan="2">
                         <?php
                             if(!empty($err) && in_array("site_url", $err)) {
                                 echo "<p class=\"badge badge-danger text-wrap\">empty</p>";
@@ -67,20 +68,56 @@
                             ...
                         </span>
                     </th>
-                    <td>
+                    <td colspan="2">
                         <?php
                             if(!empty($err) && in_array("paths", $err)) {
                                 echo "<p class=\"badge badge-danger text-wrap\">empty</p>";
                             }
                         ?>
-                        <textarea name="paths" id="fUrls" cols="30" rows="10" class="w-100"><?php if(isset($post["paths"]) && $post["paths"] !== "") echo $post["paths"] ?></textarea>
+                        <textarea name="paths" id="fUrls" rows="10" class="w-100"><?php if(isset($post["paths"]) && $post["paths"] !== "") echo $post["paths"] ?></textarea>
+                    </td>
+                </tr>
+                <?php /*
+                <tr v-for="count in counts">
+                    <th v-if="count == 1" v-bind:rowspan="counts">
+                        <label for="fReplace">Replace</label>
+                    </th>
+                    <td>
+                        search
+                        <textarea v-bind:name="'replace['+(count-1)+'][search]'" id="fReplaceSearch" rows="5" class="w-100"></textarea>
+                    </td>
+                    <td>
+                        replace
+                        <textarea v-bind:name="'replace['+(count-1)+'][replace]'" id="fReplaceReplace" rows="5" class="w-100"></textarea>
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2" class="text-center"><button type="submit" class="btn btn-primary btn-lg">Create Static Files!</button></td>
+                    <td></td>
+                    <td colspan="2" class="text-right"><button type="button" class="btn btn-info" v-on:click="addReplaceRow">More</button></td>
+                </tr>
+                */ ?>
+                <tr>
+                    <td colspan="3" class="text-center"><button type="submit" class="btn btn-primary btn-lg">Create Static Files!</button></td>
                 </tr>
             </tbody>
         </table>
     </form>
+
+    <?php /*
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
+    <script>
+        const app = new Vue({
+            el: '#app',
+            data: {
+                counts: 1
+            },
+            methods: {
+                addReplaceRow: function() {
+                    this.counts++
+                }
+            }
+        })
+    </script>
+    */ ?>
 </body>
 </html>
