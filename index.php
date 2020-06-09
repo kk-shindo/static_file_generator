@@ -58,22 +58,22 @@
                 </tr>
                 <tr>
                     <th>
-                        <label for="fUrls">URLs</label><br>
+                        <label for="fPaths">PATHs</label><br>
                         <span class="font-weight-light">
                             [example]<br>
-                            https://example.com/article/1/<br>
-                            https://example.com/article/2/<br>
-                            https://example.com/article/3/<br>
+                            /article/1/<br>
+                            /article/2/<br>
+                            /article/3/<br>
                             ...
                         </span>
                     </th>
                     <td>
                         <?php
-                            if(!empty($err) && in_array("site_url", $err)) {
+                            if(!empty($err) && in_array("paths", $err)) {
                                 echo "<p class=\"badge badge-danger text-wrap\">empty</p>";
                             }
                         ?>
-                        <textarea name="target_urls" id="fUrls" cols="30" rows="10" class="w-100"><?php if(isset($post["target_urls"]) && $post["target_urls"] !== "") echo $post["target_urls"] ?></textarea>
+                        <textarea name="paths" id="fUrls" cols="30" rows="10" class="w-100"><?php if(isset($post["paths"]) && $post["paths"] !== "") echo $post["paths"] ?></textarea>
                     </td>
                 </tr>
                 <tr>
