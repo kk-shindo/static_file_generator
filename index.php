@@ -1,21 +1,27 @@
 <?php
-    $post = $_POST;
-    echo "<pre>"; var_dump($post); echo "</pre>";
-    if(!empty($post)) {
-        $err = [];
-        foreach($post as $key => $val) {
-            if(!$val) {
-                $err[] = $key;
-            }
-        }
-
-        if(empty($err)) {
-            session_start();
-            $_SESSION['data'] = $post;
-            header('Location: /create.php');
-            exit();
+$post = $_POST;
+$err = [];
+if(!empty($post)) {
+    foreach($post as $key => $val) {
+        if(!$val) {
+            $err[] = $key;
         }
     }
+
+    if(empty($err)) {
+        session_start();
+        $_SESSION['data'] = $post;
+        header('Location: /create.php');
+        exit();
+    }
+}
+
+function the_empty_error($key, $error) {
+    if(!empty($error) && in_array($key, $error)) {
+        echo "<p class=\"badge badge-danger text-wrap\">empty</p>";
+    }
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -35,11 +41,7 @@
                         <label for="fSiteUrl">Extension</label>
                     </th>
                     <td colspan="2">
-                        <?php
-                            if(!empty($err) && in_array("extension", $err)) {
-                                echo "<p class=\"badge badge-danger text-wrap\">empty</p>";
-                            }
-                        ?>
+                        <?php the_empty_error("extension", $err); ?>
                         <label class="mr-5"><input type="radio" name="extension" value="html" class="mr-2" checked>html</label>
                         <label class="mr-5"><input type="radio" name="extension" value="php" class="mr-2">php</label>
                     </td>
@@ -49,11 +51,7 @@
                         <label for="fSiteUrl">Site URL</label>
                     </th>
                     <td colspan="2">
-                        <?php
-                            if(!empty($err) && in_array("site_url", $err)) {
-                                echo "<p class=\"badge badge-danger text-wrap\">empty</p>";
-                            }
-                        ?>
+                        <?php the_empty_error("site_url", $err); ?>
                         <input type="text" name="site_url" id="fSiteUrl" value="<?php if(isset($post["site_url"]) && $post["site_url"] !== "") echo $post["site_url"] ?>" placeholder="https://example.com" class="w-100">
                     </td>
                 </tr>
@@ -69,33 +67,32 @@
                         </span>
                     </th>
                     <td colspan="2">
-                        <?php
-                            if(!empty($err) && in_array("paths", $err)) {
-                                echo "<p class=\"badge badge-danger text-wrap\">empty</p>";
-                            }
-                        ?>
+                        <?php the_empty_error("paths", $err); ?>
                         <textarea name="paths" id="fUrls" rows="10" class="w-100"><?php if(isset($post["paths"]) && $post["paths"] !== "") echo $post["paths"] ?></textarea>
                     </td>
                 </tr>
-                <?php /*
-                <tr v-for="count in counts">
-                    <th v-if="count == 1" v-bind:rowspan="counts">
+                <?php
+                ?>
+                <tr class="replace" v-for="(element, index) in elements">
+                    <th v-if="index == 0" v-bind:rowspan="elements.length">
                         <label for="fReplace">Replace</label>
                     </th>
                     <td>
                         search
-                        <textarea v-bind:name="'replace['+(count-1)+'][search]'" id="fReplaceSearch" rows="5" class="w-100"></textarea>
+                        <p><input type="text" v-bind:name="'replace['+(index)+'][search]'" v-model="element.search" class="w-100"></p>
                     </td>
                     <td>
                         replace
-                        <textarea v-bind:name="'replace['+(count-1)+'][replace]'" id="fReplaceReplace" rows="5" class="w-100"></textarea>
+                        <p><input type="text" v-bind:name="'replace['+(index)+'][replace]'" v-model="element.replace" class="w-100"></p>
+                        <p class="text-right" v-show="elements.length > 1"><button type="button" class="btn btn-danger" v-on:click="removeReplaceRow(index)">Remove</button></p>
                     </td>
                 </tr>
                 <tr>
                     <td></td>
-                    <td colspan="2" class="text-right"><button type="button" class="btn btn-info" v-on:click="addReplaceRow">More</button></td>
+                    <td colspan="2" class="text-right">
+                        <button type="button" class="btn btn-info" v-on:click="addReplaceRow">More</button>
+                    </td>
                 </tr>
-                */ ?>
                 <tr>
                     <td colspan="3" class="text-center"><button type="submit" class="btn btn-primary btn-lg">Create Static Files!</button></td>
                 </tr>
@@ -103,21 +100,58 @@
         </table>
     </form>
 
-    <?php /*
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
+    <?php
+        class Posted_Replace_Data {
+            function __construct($post) {
+                $this->post = $post;
+            }
+            function is_empty_replace_data() {
+                return empty($this->post["replace"]);
+            }
+            function count_replace_data() {
+                return $this->is_empty_replace_data() ? 1 : count($this->post["replace"]);
+            }
+            function js_the_elements_objects() {
+                $arr = [];
+                for($i = 0; $i < $this->count_replace_data(); $i++) {
+                    if(!$this->is_empty_replace_data()) {
+                        $arr[$i]['search'] = $this->post["replace"][$i]["search"];
+                        $arr[$i]['replace'] = $this->post["replace"][$i]["replace"];
+                    } else {
+                        $arr[$i]['search'] = "";
+                        $arr[$i]['replace'] = "";
+                    }
+                }
+                return json_encode($arr);
+            }
+        }
+        $posted_replace_data = new Posted_Replace_Data($post);
+    ?>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script>
         const app = new Vue({
             el: '#app',
             data: {
-                counts: 1
+                elements: <?= $posted_replace_data->js_the_elements_objects(); ?>
             },
             methods: {
                 addReplaceRow: function() {
-                    this.counts++
+                    this.elements.push({
+                        search: '',
+                        replace: ''
+                    })
+                },
+                removeReplaceRow: function(index) {
+                    const trElm = document.querySelectorAll('.replace');
+                    if(trElm.length > 1) {
+                        const result = window.confirm('該当の行を削除してもよろしいですか')
+                        if(result) {
+                            this.elements.splice(index, 1)
+                        }
+                    }
                 }
             }
         })
     </script>
-    */ ?>
 </body>
 </html>

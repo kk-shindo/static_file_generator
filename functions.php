@@ -1,14 +1,12 @@
 <?php
 class Create {
 
-    protected $extension;
-    protected $site_url;
-    protected $paths;
-
-    function __construct($post) {
-        $this->extension = $post["extension"];
-        $this->site_url = $post["site_url"];
-        $this->paths = $post["paths"];
+    function __construct($data) {
+        $this->data = $data;
+        $this->extension = $this->data["extension"];
+        $this->site_url = $this->data["site_url"];
+        $this->paths = $this->data["paths"];
+        $this->replace = $this->data["replace"];
         $this->output_dir = "output";
     }
 
@@ -61,13 +59,7 @@ class Create {
         }
     }
 
-    /*
-    * ファイル生成の関数
-    * $site_url: https://example.com
-    * $path: /article/1/
-    * $extension: html or php
-    */
-    function create_file($path) {
+    function get_target_url($path) {
         // $site_urlを整形
         $site_url = rtrim($this->site_url, '/');
         // $pathを整形
@@ -77,9 +69,28 @@ class Create {
         if(substr($path, -1, 1) !== "/") {
             $path = "{$path}/";
         }
-        $target_url = $site_url.$path;
+        return $site_url.$path;
+    }
+
+    /*
+    * ファイル生成の関数
+    * $site_url: https://example.com
+    * $path: /article/1/
+    * $extension: html or php
+    */
+    function create_file($path) {
+        $target_url = $this->get_target_url($path);
         if(file_get_contents(urldecode($target_url)) === false) return false;
         $buff = file_get_contents(urldecode($target_url)); // urlの内容を読み取る
+
+        if(!empty($this->replace)) {
+            foreach($this->replace as $val) {
+                if(!empty($val)) {
+                    $buff = str_replace($val["search"], $val["replace"], $buff);
+                }
+            }
+        }
+
         $this->check_dir($path);
         $fname = "output{$path}index.{$this->extension}"; // 生成するファイルのディレクトリとファイル名
         $fhandle = fopen($fname, "w"); // ファイルを書き込みモードで開く。

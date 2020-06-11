@@ -1,29 +1,29 @@
 <?php
 session_start();
 
+$session = $_SESSION;
+unset($_SESSION["data"]);
+
+$is_empty_session = empty($session) || !isset($session["data"]);
+
+if($is_empty_session) {
 //読み込みエラーもしくは変数がない時の処理
-if(empty($_SESSION) || !isset($_SESSION["data"])) {
 $html = <<<__HTML__
 <h1>Failed!</h1>
 <p>Could not read file</p>
-<p><a href=\"../\">Return</a></p>
 __HTML__;
 } else {
-    // POSTした内容を変数に入れる
-    $post = $_SESSION["data"];
-    unset($_SESSION["data"]);
-
-    require_once("./functions.php");
-    $create = new Create($post);
-    $create->exec();
-
 $html = <<<__HTML__
 <h1>Success!</h1>
-<p><a href="./output.zip">download</a></p>
-<p><a href="../">Return</a></p>
+<p><a href="./output.zip" class="btn btn-primary">download</a></p>
 __HTML__;
 }
 
+if(!$is_empty_session) {
+    require_once('./functions.php');
+    $create = new Create($session["data"]);
+    $create->exec();
+}
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -35,5 +35,15 @@ __HTML__;
 </head>
 <body class="container">
 <?= $html ?>
+<p><a href="../" class="btn btn-secondary">Return</a></p>
+
+<?php if(!$is_empty_session): ?>
+<ul>
+    <?php foreach($create->generate_target_urls() as $url): ?>
+    <li><a href="<?= $create->get_target_url($url) ?>" targe="_blank"><?= $create->get_target_url($url) ?></a></li>
+    <?php endforeach; ?>
+</ul>
+<?php endif; ?>
+
 </body>
 </html>
